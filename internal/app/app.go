@@ -1,0 +1,176 @@
+package app
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+	"path/filepath"
+
+	"pushbullet-client/internal/config"
+	"pushbullet-client/internal/gui"
+	"pushbullet-client/internal/notifications"
+	"pushbullet-client/internal/pushbullet"
+)
+
+type App struct {
+	config       *config.Config
+	client       *pushbullet.Client
+	notifManager *notifications.Manager
+	trayManager  *gui.TrayManager
+	eventsWindow *gui.EventsWindow
+}
+
+func New(cfg *config.Config) (*App, error) {
+	if cfg.APIKey == "" {
+		return nil, fmt.Errorf("API key is required. Please set it in the config file")
+	}
+
+	var e2eKey string
+	if cfg.E2EEnabled {
+		e2eKey = cfg.E2EKey
+	}
+
+	client := pushbullet.NewClient(cfg.APIKey, e2eKey)
+	
+	notifManager := notifications.NewManager(
+		cfg.Notifications.Enabled,
+		cfg.Notifications.ShowMirrors,
+		cfg.Notifications.ShowSMS,
+		cfg.Notifications.ShowCalls,
+		cfg.Notifications.Filters,
+	)
+
+	app := &App{
+		config:       cfg,
+		client:       client,
+		notifManager: notifManager,
+		trayManager:  gui.NewTrayManager(),
+		eventsWindow: gui.NewEventsWindow(),
+	}
+
+	return app, nil
+}
+
+func (a *App) RunGUI(ctx context.Context) error {
+	log.Println("Starting Pushbullet client with GUI...")
+
+	// Test API connection
+	if err := a.testConnection(ctx); err != nil {
+		return fmt.Errorf("failed to connect to Pushbullet API: %w", err)
+	}
+
+	// Setup autostart if enabled
+	if a.config.Autostart {
+		if err := a.setupAutostart(); err != nil {
+			log.Printf("Failed to setup autostart: %v", err)
+		}
+	}
+
+	// Start stream connection in background
+	go func() {
+		if err := a.client.ConnectStream(ctx, a.handleStreamMessage); err != nil {
+			log.Printf("Stream connection ended: %v", err)
+		}
+	}()
+
+	// Run tray (this blocks)
+	a.trayManager.Run(
+		func() {
+			log.Println("Tray icon ready")
+		},
+		func() {
+			log.Println("Tray icon exiting")
+		},
+	)
+
+	return nil
+}
+
+func (a *App) RunDaemon(ctx context.Context) error {
+	log.Println("Starting Pushbullet client as daemon...")
+
+	// Test API connection
+	if err := a.testConnection(ctx); err != nil {
+		return fmt.Errorf("failed to connect to Pushbullet API: %w", err)
+	}
+
+	// Connect to stream (this blocks)
+	return a.client.ConnectStream(ctx, a.handleStreamMessage)
+}
+
+func (a *App) testConnection(ctx context.Context) error {
+	user, err := a.client.GetUser(ctx)
+	if err != nil {
+		return err
+	}
+
+	if email, ok := user["email"].(string); ok {
+		log.Printf("Connected as: %s", email)
+	} else {
+		log.Println("Connected to Pushbullet API")
+	}
+
+	// Update E2E encryption with user iden if available
+	if a.config.E2EEnabled && a.config.E2EKey != "" {
+		if userIden, ok := user["iden"].(string); ok {
+			a.client.UpdateE2EWithUserIden(a.config.E2EKey, userIden)
+			log.Println("Updated E2E encryption with user iden")
+		}
+	}
+
+	return nil
+}
+
+func (a *App) handleStreamMessage(msg *pushbullet.StreamMessage) {
+	// Add to events window
+	a.eventsWindow.AddEvent(msg)
+
+	// Handle push notifications
+	if msg.Type == "push" && len(msg.Push) > 0 {
+		var push pushbullet.Push
+		if err := json.Unmarshal(msg.Push, &push); err != nil {
+			log.Printf("Failed to unmarshal push: %v", err)
+			return
+		}
+
+		a.notifManager.HandlePush(&push)
+	}
+}
+
+func (a *App) setupAutostart() error {
+	// Get current executable path
+	execPath, err := os.Executable()
+	if err != nil {
+		return err
+	}
+
+	// Create XDG autostart directory
+	configHome := os.Getenv("XDG_CONFIG_HOME")
+	if configHome == "" {
+		homeDir, _ := os.UserHomeDir()
+		configHome = filepath.Join(homeDir, ".config")
+	}
+	
+	autostartDir := filepath.Join(configHome, "autostart")
+	if err := os.MkdirAll(autostartDir, 0755); err != nil {
+		return err
+	}
+
+	// Create desktop entry
+	desktopEntry := fmt.Sprintf(`[Desktop Entry]
+Type=Application
+Name=Pushbullet Client
+Comment=Pushbullet desktop client
+Exec=%s
+Icon=pushbullet
+StartupNotify=false
+NoDisplay=true
+Hidden=false
+X-GNOME-Autostart-enabled=true
+`, execPath)
+
+	desktopFile := filepath.Join(autostartDir, "pushbullet-client.desktop")
+	return os.WriteFile(desktopFile, []byte(desktopEntry), 0644)
+}

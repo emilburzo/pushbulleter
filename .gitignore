@@ -31,4 +31,6 @@ go.work.sum
 # .idea/
 # .vscode/
 .aider*
+.idea
 inspiration
+/pushbullet-client
