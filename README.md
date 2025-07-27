@@ -1,23 +1,24 @@
-# Pushbulleter for Linux
+# Pushbulleter for Linux/XFCE
 
-A modern Go-based Pushbulleter for Linux with desktop notifications, system tray integration, and end-to-end encryption support.
+A modern Go-based Pushbullet client specifically designed for Linux with XFCE desktop environment. Features optimized desktop notifications, system tray integration, and end-to-end encryption support.
 
 ## Features
 
-- **Real-time notifications**: Receive desktop notifications for incoming calls, SMS messages, and other Pushbullet events
+- **XFCE-optimized notifications**: Enhanced desktop notifications with proper urgency levels, extended display times, and sound alerts
 - **System tray integration**: Runs quietly in the background with a system tray icon
-- **End-to-end encryption**: Support for Pushbullet's E2E encryption
+- **End-to-end encryption**: Full support for Pushbullet's E2E encryption
 - **XDG compliance**: Follows Linux desktop standards for configuration and autostart
-- **XFCE compatible**: Tested with XFCE desktop environment
-- **Autostart support**: Optional automatic startup on login
+- **Native Linux integration**: Uses notify-send for notifications, follows XFCE conventions
+- **Autostart support**: Automatic startup on login with proper desktop entry
 
 ## Installation
 
 ### Prerequisites
 
 - Go 1.21 or later
-- Linux desktop environment (tested with XFCE)
-- libnotify for desktop notifications
+- Linux with XFCE desktop environment
+- libnotify-bin package for desktop notifications
+- xfce4-notifyd (XFCE notification daemon)
 
 ### Build from source
 
@@ -31,8 +32,15 @@ go build -o pushbulleter cmd/pushbulleter/main.go
 ### Install
 
 ```bash
+# Install to system
 sudo cp pushbulleter /usr/local/bin/
+
+# Or install to user bin
+mkdir -p ~/.local/bin
+cp pushbulleter ~/.local/bin/
 ```
+
+Make sure `~/.local/bin` is in your PATH if using user installation.
 
 ## Configuration
 
@@ -99,15 +107,25 @@ To enable automatic startup on login, set `autostart: true` in the config file. 
 
 ## Notifications
 
-The client shows desktop notifications for:
+The client shows XFCE-optimized desktop notifications for:
 
-- **Incoming calls** (📞)
-- **SMS messages** (💬)
-- **Mirrored notifications** from Android devices
-- **Notes and links** sent to your devices
-- **File shares**
+- **Incoming calls** (📞) - Critical urgency, 25 second display, phone ring sound
+- **SMS messages** (💬) - Critical urgency, 18 second display, message sound
+- **Mirrored notifications** from Android devices - Normal urgency, 10 second display
+- **Notes and links** sent to your devices - Normal urgency, 10 second display
+- **File shares** (📎) - Normal urgency, 10 second display
 
-You can customize which notifications to show in the config file.
+All notifications use appropriate icons and categories for better XFCE integration. You can customize which notifications to show in the config file.
+
+### Notification Requirements
+
+- `libnotify-bin` - provides the `notify-send` command
+- `xfce4-notifyd` - XFCE notification daemon (usually pre-installed)
+
+Install missing packages:
+```bash
+sudo apt install libnotify-bin xfce4-notifyd
+```
 
 ## System Tray
 
@@ -156,9 +174,11 @@ MIT License - see LICENSE file for details.
 
 ### No notifications appearing
 
-1. Check if libnotify is installed: `sudo apt install libnotify-bin`
+1. Check if required packages are installed: `sudo apt install libnotify-bin xfce4-notifyd`
 2. Test notifications: `notify-send "Test" "This is a test notification"`
-3. Check the application logs for errors
+3. Restart XFCE notification daemon: `killall xfce4-notifyd && xfce4-notifyd &`
+4. Check XFCE notification settings: Settings → Notifications
+5. Check the application logs for errors
 
 ### Connection issues
 

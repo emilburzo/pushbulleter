@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gen2brain/beeep"
 	"pushbulleter/internal/pushbullet"
 )
 
@@ -55,10 +54,6 @@ func (m *Manager) HandlePush(push *pushbullet.Push) {
 
 			if err := m.showEnhancedNotification(title, message, "sms"); err != nil {
 				log.Printf("Failed to show SMS notification: %v", err)
-				// Fallback to basic notification
-				if err := beeep.Notify(title, message, ""); err != nil {
-					log.Printf("Failed to show fallback SMS notification: %v", err)
-				}
 			}
 		}
 		return
@@ -69,13 +64,9 @@ func (m *Manager) HandlePush(push *pushbullet.Push) {
 		return
 	}
 
-	// Show enhanced desktop notification
+	// Show Linux desktop notification
 	if err := m.showEnhancedNotification(title, message, push.Type); err != nil {
 		log.Printf("Failed to show notification: %v", err)
-		// Fallback to basic notification
-		if err := beeep.Notify(title, message, ""); err != nil {
-			log.Printf("Failed to show fallback notification: %v", err)
-		}
 	}
 }
 
@@ -190,46 +181,41 @@ func (m *Manager) formatNotification(push *pushbullet.Push) (string, string) {
 	return "", ""
 }
 
-// showEnhancedNotification shows a notification with enhanced visibility options
+// showEnhancedNotification shows a notification optimized for Linux/XFCE
 func (m *Manager) showEnhancedNotification(title, message, notificationType string) error {
-	// Try to use notify-send with enhanced options for better visibility
-	if err := m.showNotifyDesktopNotification(title, message, notificationType); err == nil {
-		return nil
-	}
-
-	// Fallback to beeep
-	return beeep.Notify(title, message, "")
+	// Use notify-send directly - this is the standard for Linux desktop environments
+	return m.showNotifyDesktopNotification(title, message, notificationType)
 }
 
-// showNotifyDesktopNotification uses notify-send with enhanced options
+// showNotifyDesktopNotification uses notify-send with XFCE-optimized options
 func (m *Manager) showNotifyDesktopNotification(title, message, notificationType string) error {
-	// Check if notify-send is available
+	// notify-send is required for Linux desktop notifications
 	if _, err := exec.LookPath("notify-send"); err != nil {
-		return fmt.Errorf("notify-send not available: %w", err)
+		return fmt.Errorf("notify-send not available - please install libnotify-bin: %w", err)
 	}
 
 	args := []string{
-		"--app-name=pushbulleter",
-		"--expire-time=10000", // Show for 10 seconds
+		"--app-name=Pushbulleter",
+		"--expire-time=12000", // Show for 12 seconds (good for XFCE)
 		"--urgency=normal",    // Default urgency
 	}
 
-	// Set urgency and timeout based on notification type
+	// XFCE-optimized settings based on notification type
 	switch notificationType {
 	case "sms", "sms_changed":
-		args = append(args, "--urgency=critical", "--expire-time=15000")
-		// Add sound for SMS
+		args = append(args, "--urgency=critical", "--expire-time=18000")
+		// XFCE sound hint
 		args = append(args, "--hint=string:sound-name:message-new-instant")
 	case "mirror":
 		// Check if it's a call
 		if strings.Contains(strings.ToLower(title), "call") {
-			args = append(args, "--urgency=critical", "--expire-time=20000")
+			args = append(args, "--urgency=critical", "--expire-time=25000")
 			args = append(args, "--hint=string:sound-name:phone-incoming-call")
 		} else {
-			args = append(args, "--urgency=normal", "--expire-time=8000")
+			args = append(args, "--urgency=normal", "--expire-time=10000")
 		}
 	default:
-		args = append(args, "--urgency=normal", "--expire-time=8000")
+		args = append(args, "--urgency=normal", "--expire-time=10000")
 	}
 
 	// Add category for better desktop integration
