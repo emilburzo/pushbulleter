@@ -98,5 +98,5 @@ func (w *EventsWindow) Show() {
 			event.Title,
 			event.Message)
 	}
-	fmt.Println("====================\n")
+	fmt.Println("====================")
 }
