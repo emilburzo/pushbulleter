@@ -15,7 +15,7 @@ A modern Go-based Pushbullet client specifically designed for Linux with XFCE de
 
 ### Prerequisites
 
-- Go 1.21 or later
+- Go 1.23 or later
 - Linux with XFCE desktop environment
 - libnotify-bin package for desktop notifications
 - xfce4-notifyd (XFCE notification daemon)
