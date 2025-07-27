@@ -3,7 +3,9 @@ package notifications
 import (
 	"fmt"
 	"log"
+	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/gen2brain/beeep"
 	"pushbulleter/internal/pushbullet"
@@ -51,8 +53,12 @@ func (m *Manager) HandlePush(push *pushbullet.Push) {
 				message = "New SMS message"
 			}
 
-			if err := beeep.Notify(title, message, ""); err != nil {
+			if err := m.showEnhancedNotification(title, message, "sms"); err != nil {
 				log.Printf("Failed to show SMS notification: %v", err)
+				// Fallback to basic notification
+				if err := beeep.Notify(title, message, ""); err != nil {
+					log.Printf("Failed to show fallback SMS notification: %v", err)
+				}
 			}
 		}
 		return
@@ -63,9 +69,13 @@ func (m *Manager) HandlePush(push *pushbullet.Push) {
 		return
 	}
 
-	// Show desktop notification
-	if err := beeep.Notify(title, message, ""); err != nil {
+	// Show enhanced desktop notification
+	if err := m.showEnhancedNotification(title, message, push.Type); err != nil {
 		log.Printf("Failed to show notification: %v", err)
+		// Fallback to basic notification
+		if err := beeep.Notify(title, message, ""); err != nil {
+			log.Printf("Failed to show fallback notification: %v", err)
+		}
 	}
 }
 
@@ -178,4 +188,96 @@ func (m *Manager) formatNotification(push *pushbullet.Push) (string, string) {
 	}
 
 	return "", ""
+}
+
+// showEnhancedNotification shows a notification with enhanced visibility options
+func (m *Manager) showEnhancedNotification(title, message, notificationType string) error {
+	// Try to use notify-send with enhanced options for better visibility
+	if err := m.showNotifyDesktopNotification(title, message, notificationType); err == nil {
+		return nil
+	}
+
+	// Fallback to beeep
+	return beeep.Notify(title, message, "")
+}
+
+// showNotifyDesktopNotification uses notify-send with enhanced options
+func (m *Manager) showNotifyDesktopNotification(title, message, notificationType string) error {
+	// Check if notify-send is available
+	if _, err := exec.LookPath("notify-send"); err != nil {
+		return fmt.Errorf("notify-send not available: %w", err)
+	}
+
+	args := []string{
+		"--app-name=pushbulleter",
+		"--expire-time=10000", // Show for 10 seconds
+		"--urgency=normal",    // Default urgency
+	}
+
+	// Set urgency and timeout based on notification type
+	switch notificationType {
+	case "sms", "sms_changed":
+		args = append(args, "--urgency=critical", "--expire-time=15000")
+		// Add sound for SMS
+		args = append(args, "--hint=string:sound-name:message-new-instant")
+	case "mirror":
+		// Check if it's a call
+		if strings.Contains(strings.ToLower(title), "call") {
+			args = append(args, "--urgency=critical", "--expire-time=20000")
+			args = append(args, "--hint=string:sound-name:phone-incoming-call")
+		} else {
+			args = append(args, "--urgency=normal", "--expire-time=8000")
+		}
+	default:
+		args = append(args, "--urgency=normal", "--expire-time=8000")
+	}
+
+	// Add category for better desktop integration
+	switch notificationType {
+	case "sms", "sms_changed":
+		args = append(args, "--category=im.received")
+	case "mirror":
+		if strings.Contains(strings.ToLower(title), "call") {
+			args = append(args, "--category=call.incoming")
+		} else {
+			args = append(args, "--category=device")
+		}
+	default:
+		args = append(args, "--category=transfer")
+	}
+
+	// Add icon based on type
+	switch notificationType {
+	case "sms", "sms_changed":
+		args = append(args, "--icon=mail-message-new")
+	case "mirror":
+		if strings.Contains(strings.ToLower(title), "call") {
+			args = append(args, "--icon=call-start")
+		} else {
+			args = append(args, "--icon=phone")
+		}
+	default:
+		args = append(args, "--icon=pushbullet")
+	}
+
+	// Add title and message
+	args = append(args, title, message)
+
+	cmd := exec.Command("notify-send", args...)
+	
+	// Set a timeout for the command
+	done := make(chan error, 1)
+	go func() {
+		done <- cmd.Run()
+	}()
+
+	select {
+	case err := <-done:
+		return err
+	case <-time.After(5 * time.Second):
+		if cmd.Process != nil {
+			cmd.Process.Kill()
+		}
+		return fmt.Errorf("notify-send command timed out")
+	}
 }
