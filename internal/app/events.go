@@ -1,4 +1,4 @@
-package gui
+package app
 
 import (
 	"encoding/json"
@@ -48,8 +48,9 @@ func HandleEvent(msg *pushbullet.StreamMessage) {
 			}
 		}
 	case "nop":
-		event.Title = "Keep-alive"
-		event.Message = "Connection heartbeat"
+		//event.Title = "Keep-alive"
+		//event.Message = "Connection heartbeat"
+		return
 	case "tickle":
 		event.Title = "Data update"
 		event.Message = "Server data changed"
@@ -64,5 +65,5 @@ func HandleEvent(msg *pushbullet.StreamMessage) {
 	}
 
 	// Log the event
-	log.Printf("[%s] %s: %s", event.Timestamp.Format("15:04:05"), event.Title, event.Message)
+	log.Printf("%s: %s", event.Title, event.Message)
 }

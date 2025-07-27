@@ -9,16 +9,16 @@ import (
 	"path/filepath"
 
 	"pushbulleter/internal/config"
-	"pushbulleter/internal/gui"
 	"pushbulleter/internal/notifications"
 	"pushbulleter/internal/pushbullet"
+	"pushbulleter/internal/tray"
 )
 
 type App struct {
 	config       *config.Config
 	client       *pushbullet.Client
 	notifManager *notifications.Manager
-	trayManager  *gui.TrayManager
+	trayManager  *tray.TrayManager
 }
 
 func New(cfg *config.Config) (*App, error) {
@@ -45,7 +45,7 @@ func New(cfg *config.Config) (*App, error) {
 		config:       cfg,
 		client:       client,
 		notifManager: notifManager,
-		trayManager:  gui.NewTrayManager(),
+		trayManager:  tray.NewTrayManager(),
 	}
 
 	return app, nil
@@ -117,7 +117,7 @@ func (a *App) testConnection(ctx context.Context) error {
 
 func (a *App) handleStreamMessage(msg *pushbullet.StreamMessage) {
 	// Add to events window
-	gui.HandleEvent(msg)
+	HandleEvent(msg)
 
 	// Handle push notifications
 	if msg.Type == "push" && len(msg.Push) > 0 {
