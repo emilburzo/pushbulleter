@@ -79,21 +79,11 @@ To enable E2E encryption:
 
 ## Usage
 
-### GUI mode (default)
-
 ```bash
 pushbulleter
 ```
 
 This starts the application with a system tray icon.
-
-### Daemon mode
-
-```bash
-pushbulleter -daemon
-```
-
-This runs the application in the background without GUI.
 
 ### Custom config file
 
