@@ -40,8 +40,8 @@ func (t *TrayManager) Run(onReady func(), onExit func()) {
 func (t *TrayManager) setupTray() {
 	// Set icon
 	systray.SetIcon(iconData)
-	systray.SetTitle("Pushbullet Client")
-	systray.SetTooltip("Pushbullet Client - Connected")
+	systray.SetTitle("pushbulleter")
+	systray.SetTooltip("pushbulleter")
 
 	// Add menu items
 	mShow := systray.AddMenuItem("Show Events", "Show event window")
