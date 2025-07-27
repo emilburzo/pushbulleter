@@ -100,6 +100,12 @@ func (a *App) RunDaemon(ctx context.Context) error {
 	return a.client.ConnectStream(ctx, a.handleStreamMessage)
 }
 
+func (a *App) Stop() {
+	if a.trayManager != nil {
+		a.trayManager.Stop()
+	}
+}
+
 func (a *App) testConnection(ctx context.Context) error {
 	user, err := a.client.GetUser(ctx)
 	if err != nil {

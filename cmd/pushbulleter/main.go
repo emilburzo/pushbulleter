@@ -55,7 +55,23 @@ func main() {
 	if *daemon {
 		err = application.RunDaemon(ctx)
 	} else {
-		err = application.RunGUI(ctx)
+		// For GUI mode, we need to handle shutdown differently
+		// since systray.Run() blocks and doesn't respect context cancellation
+		errChan := make(chan error, 1)
+		go func() {
+			errChan <- application.RunGUI(ctx)
+		}()
+		
+		select {
+		case <-ctx.Done():
+			// Signal received, stop the app
+			application.Stop()
+			return
+		case err := <-errChan:
+			if err != nil {
+				log.Fatalf("Application error: %v", err)
+			}
+		}
 	}
 
 	if err != nil {
