@@ -9,17 +9,16 @@ import (
 	"path/filepath"
 
 	"pushbulleter/internal/config"
-	"pushbulleter/internal/gui"
 	"pushbulleter/internal/notifications"
 	"pushbulleter/internal/pushbullet"
+	"pushbulleter/internal/tray"
 )
 
 type App struct {
 	config       *config.Config
 	client       *pushbullet.Client
 	notifManager *notifications.Manager
-	trayManager  *gui.TrayManager
-	eventsWindow *gui.EventsWindow
+	trayManager  *tray.TrayManager
 }
 
 func New(cfg *config.Config) (*App, error) {
@@ -46,15 +45,14 @@ func New(cfg *config.Config) (*App, error) {
 		config:       cfg,
 		client:       client,
 		notifManager: notifManager,
-		trayManager:  gui.NewTrayManager(),
-		eventsWindow: gui.NewEventsWindow(),
+		trayManager:  tray.NewTrayManager(),
 	}
 
 	return app, nil
 }
 
 func (a *App) RunGUI(ctx context.Context) error {
-	log.Println("Starting pushbulleter with GUI...")
+	log.Println("Starting pushbulleter...")
 
 	// Test API connection
 	if err := a.testConnection(ctx); err != nil {
@@ -88,7 +86,6 @@ func (a *App) RunGUI(ctx context.Context) error {
 	return nil
 }
 
-
 func (a *App) Stop() {
 	if a.trayManager != nil {
 		a.trayManager.Stop()
@@ -120,7 +117,7 @@ func (a *App) testConnection(ctx context.Context) error {
 
 func (a *App) handleStreamMessage(msg *pushbullet.StreamMessage) {
 	// Add to events window
-	a.eventsWindow.AddEvent(msg)
+	HandleEvent(msg)
 
 	// Handle push notifications
 	if msg.Type == "push" && len(msg.Push) > 0 {

@@ -1,4 +1,4 @@
-package gui
+package app
 
 import (
 	"encoding/json"
@@ -9,10 +9,6 @@ import (
 	"pushbulleter/internal/pushbullet"
 )
 
-type EventsWindow struct {
-	events []Event
-}
-
 type Event struct {
 	Timestamp time.Time
 	Type      string
@@ -21,13 +17,7 @@ type Event struct {
 	Raw       string
 }
 
-func NewEventsWindow() *EventsWindow {
-	return &EventsWindow{
-		events: make([]Event, 0),
-	}
-}
-
-func (w *EventsWindow) AddEvent(msg *pushbullet.StreamMessage) {
+func HandleEvent(msg *pushbullet.StreamMessage) {
 	event := Event{
 		Timestamp: time.Now(),
 		Type:      msg.Type,
@@ -58,8 +48,9 @@ func (w *EventsWindow) AddEvent(msg *pushbullet.StreamMessage) {
 			}
 		}
 	case "nop":
-		event.Title = "Keep-alive"
-		event.Message = "Connection heartbeat"
+		//event.Title = "Keep-alive"
+		//event.Message = "Connection heartbeat"
+		return
 	case "tickle":
 		event.Title = "Data update"
 		event.Message = "Server data changed"
@@ -73,30 +64,6 @@ func (w *EventsWindow) AddEvent(msg *pushbullet.StreamMessage) {
 		event.Raw = string(rawData)
 	}
 
-	// Add to events list (keep last 100 events)
-	w.events = append(w.events, event)
-	if len(w.events) > 100 {
-		w.events = w.events[1:]
-	}
-
 	// Log the event
-	log.Printf("[%s] %s: %s", event.Timestamp.Format("15:04:05"), event.Title, event.Message)
-}
-
-func (w *EventsWindow) GetEvents() []Event {
-	return w.events
-}
-
-func (w *EventsWindow) Show() {
-	// For now, just print events to console
-	// In a full GUI implementation, this would open a window
-	fmt.Println("\n=== Recent Events ===")
-	for i := len(w.events) - 1; i >= 0 && i >= len(w.events)-10; i-- {
-		event := w.events[i]
-		fmt.Printf("[%s] %s: %s\n",
-			event.Timestamp.Format("15:04:05"),
-			event.Title,
-			event.Message)
-	}
-	fmt.Println("====================")
+	log.Printf("%s: %s", event.Title, event.Message)
 }

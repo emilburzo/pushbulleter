@@ -1,4 +1,4 @@
-package gui
+package tray
 
 import (
 	"context"
