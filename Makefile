@@ -20,9 +20,6 @@ test:
 run: build
 	./pushbulleter
 
-# Run in daemon mode
-daemon: build
-	./pushbulleter -daemon
 
 # Download dependencies
 deps:

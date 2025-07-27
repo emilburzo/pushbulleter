@@ -88,17 +88,6 @@ func (a *App) RunGUI(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) RunDaemon(ctx context.Context) error {
-	log.Println("Starting Pushbulleter as daemon...")
-
-	// Test API connection
-	if err := a.testConnection(ctx); err != nil {
-		return fmt.Errorf("failed to connect to Pushbullet API: %w", err)
-	}
-
-	// Connect to stream (this blocks)
-	return a.client.ConnectStream(ctx, a.handleStreamMessage)
-}
 
 func (a *App) Stop() {
 	if a.trayManager != nil {

@@ -16,7 +16,6 @@ import (
 func main() {
 	var (
 		configPath = flag.String("config", "", "Path to config file (default: XDG_CONFIG_HOME/pushbulleter/config.yaml)")
-		daemon     = flag.Bool("daemon", false, "Run as daemon without GUI")
 		version    = flag.Bool("version", false, "Show version information")
 	)
 	flag.Parse()
@@ -51,30 +50,20 @@ func main() {
 		cancel()
 	}()
 
-	// Run application
-	if *daemon {
-		err = application.RunDaemon(ctx)
-	} else {
-		// For GUI mode, we need to handle shutdown differently
-		// since systray.Run() blocks and doesn't respect context cancellation
-		errChan := make(chan error, 1)
-		go func() {
-			errChan <- application.RunGUI(ctx)
-		}()
+	// Run application in GUI mode
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- application.RunGUI(ctx)
+	}()
 
-		select {
-		case <-ctx.Done():
-			// Signal received, stop the app
-			application.Stop()
-			return
-		case err := <-errChan:
-			if err != nil {
-				log.Fatalf("Application error: %v", err)
-			}
+	select {
+	case <-ctx.Done():
+		// Signal received, stop the app
+		application.Stop()
+		return
+	case err := <-errChan:
+		if err != nil {
+			log.Fatalf("Application error: %v", err)
 		}
-	}
-
-	if err != nil {
-		log.Fatalf("Application error: %v", err)
 	}
 }
