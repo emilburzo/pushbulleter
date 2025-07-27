@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -16,14 +15,8 @@ import (
 func main() {
 	var (
 		configPath = flag.String("config", "", "Path to config file (default: XDG_CONFIG_HOME/pushbulleter/config.yaml)")
-		version    = flag.Bool("version", false, "Show version information")
 	)
 	flag.Parse()
-
-	if *version {
-		fmt.Println("Pushbulleter v1.0.0")
-		return
-	}
 
 	// Load configuration
 	cfg, err := config.Load(*configPath)
