@@ -27,7 +27,12 @@ func HandleEvent(msg *pushbullet.StreamMessage) {
 	case "push":
 		if len(msg.Push) > 0 {
 			var push pushbullet.Push
+
 			if err := json.Unmarshal(msg.Push, &push); err == nil {
+				if push.Type == "dismissal" {
+					return
+				}
+
 				event.Title = fmt.Sprintf("Push: %s", push.Type)
 
 				// Special handling for SMS events
@@ -64,6 +69,7 @@ func HandleEvent(msg *pushbullet.StreamMessage) {
 		event.Raw = string(rawData)
 	}
 
+	//log.Printf("debug: %s", event.Raw)
 	// Log the event
 	log.Printf("%s: %s", event.Title, event.Message)
 }
