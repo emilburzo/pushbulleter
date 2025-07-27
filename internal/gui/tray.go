@@ -44,24 +44,12 @@ func (t *TrayManager) setupTray() {
 	systray.SetTooltip("pushbulleter")
 
 	// Add menu items
-	mShow := systray.AddMenuItem("Show Events", "Show event window")
-	systray.AddSeparator()
-	mSettings := systray.AddMenuItem("Settings", "Open settings")
-	systray.AddSeparator()
 	mQuit := systray.AddMenuItem("Quit", "Quit the application")
 
 	// Handle menu clicks
 	go func() {
 		for {
 			select {
-			case <-mShow.ClickedCh:
-				log.Println("Show events clicked")
-				// TODO: Implement show events window
-
-			case <-mSettings.ClickedCh:
-				log.Println("Settings clicked")
-				// TODO: Implement settings window
-
 			case <-mQuit.ClickedCh:
 				log.Println("Quit clicked")
 				t.cancel()
