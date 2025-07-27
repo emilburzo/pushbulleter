@@ -54,7 +54,7 @@ func New(cfg *config.Config) (*App, error) {
 }
 
 func (a *App) RunGUI(ctx context.Context) error {
-	log.Println("Starting Pushbullet client with GUI...")
+	log.Println("Starting pushbulleter with GUI...")
 
 	// Test API connection
 	if err := a.testConnection(ctx); err != nil {
@@ -89,7 +89,7 @@ func (a *App) RunGUI(ctx context.Context) error {
 }
 
 func (a *App) RunDaemon(ctx context.Context) error {
-	log.Println("Starting Pushbullet client as daemon...")
+	log.Println("Starting Pushbulleter as daemon...")
 
 	// Test API connection
 	if err := a.testConnection(ctx); err != nil {
@@ -167,7 +167,7 @@ func (a *App) setupAutostart() error {
 	// Create desktop entry
 	desktopEntry := fmt.Sprintf(`[Desktop Entry]
 Type=Application
-Name=Pushbullet Client
+Name=Pushbulleter
 Comment=Pushbullet desktop client
 Exec=%s
 Icon=pushbullet

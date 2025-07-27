@@ -1,6 +1,6 @@
-# Pushbullet Client for Linux
+# Pushbulleter for Linux
 
-A modern Go-based Pushbullet client for Linux with desktop notifications, system tray integration, and end-to-end encryption support.
+A modern Go-based Pushbulleter for Linux with desktop notifications, system tray integration, and end-to-end encryption support.
 
 ## Features
 

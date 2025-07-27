@@ -22,7 +22,7 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Println("Pushbullet Client v1.0.0")
+		fmt.Println("Pushbulleter v1.0.0")
 		return
 	}
 
@@ -61,7 +61,7 @@ func main() {
 		go func() {
 			errChan <- application.RunGUI(ctx)
 		}()
-		
+
 		select {
 		case <-ctx.Done():
 			// Signal received, stop the app
