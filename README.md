@@ -152,7 +152,6 @@ Right-click the tray icon to access:
 
 ### Dependencies
 
-- `github.com/gen2brain/beeep` - Desktop notifications
 - `github.com/getlantern/systray` - System tray integration
 - `github.com/gorilla/websocket` - WebSocket client for real-time stream
 - `golang.org/x/crypto` - Cryptographic functions for E2E encryption
