@@ -9,13 +9,13 @@ import (
 	"os/signal"
 	"syscall"
 
-	"pushbullet-client/internal/app"
-	"pushbullet-client/internal/config"
+	"pushbulleter/internal/app"
+	"pushbulleter/internal/config"
 )
 
 func main() {
 	var (
-		configPath = flag.String("config", "", "Path to config file (default: XDG_CONFIG_HOME/pushbullet-client/config.yaml)")
+		configPath = flag.String("config", "", "Path to config file (default: XDG_CONFIG_HOME/pushbulleter/config.yaml)")
 		daemon     = flag.Bool("daemon", false, "Run as daemon without GUI")
 		version    = flag.Bool("version", false, "Show version information")
 	)

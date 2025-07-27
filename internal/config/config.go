@@ -12,7 +12,7 @@ type Config struct {
 	APIKey     string `yaml:"api_key"`
 	E2EEnabled bool   `yaml:"e2e_enabled"`
 	E2EKey     string `yaml:"e2e_key,omitempty"`
-	
+
 	Notifications NotificationConfig `yaml:"notifications"`
 	GUI           GUIConfig          `yaml:"gui"`
 	Autostart     bool               `yaml:"autostart"`
@@ -27,7 +27,7 @@ type NotificationConfig struct {
 }
 
 type GUIConfig struct {
-	ShowTrayIcon bool `yaml:"show_tray_icon"`
+	ShowTrayIcon   bool `yaml:"show_tray_icon"`
 	StartMinimized bool `yaml:"start_minimized"`
 }
 
@@ -97,5 +97,5 @@ func getDefaultConfigPath() string {
 		homeDir, _ := os.UserHomeDir()
 		configHome = filepath.Join(homeDir, ".config")
 	}
-	return filepath.Join(configHome, "pushbullet-client", "config.yaml")
+	return filepath.Join(configHome, "pushbulleter", "config.yaml")
 }

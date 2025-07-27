@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"pushbullet-client/internal/pushbullet"
+	"pushbulleter/internal/pushbullet"
 )
 
 type EventsWindow struct {
@@ -39,7 +39,7 @@ func (w *EventsWindow) AddEvent(msg *pushbullet.StreamMessage) {
 			var push pushbullet.Push
 			if err := json.Unmarshal(msg.Push, &push); err == nil {
 				event.Title = fmt.Sprintf("Push: %s", push.Type)
-				
+
 				// Special handling for SMS events
 				if push.Type == "sms_changed" && len(push.Notifications) > 0 {
 					notification := push.Notifications[0] // Show first notification
@@ -93,9 +93,9 @@ func (w *EventsWindow) Show() {
 	fmt.Println("\n=== Recent Events ===")
 	for i := len(w.events) - 1; i >= 0 && i >= len(w.events)-10; i-- {
 		event := w.events[i]
-		fmt.Printf("[%s] %s: %s\n", 
-			event.Timestamp.Format("15:04:05"), 
-			event.Title, 
+		fmt.Printf("[%s] %s: %s\n",
+			event.Timestamp.Format("15:04:05"),
+			event.Title,
 			event.Message)
 	}
 	fmt.Println("====================\n")

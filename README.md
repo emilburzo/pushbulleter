@@ -23,21 +23,21 @@ A modern Go-based Pushbullet client for Linux with desktop notifications, system
 
 ```bash
 git clone <repository-url>
-cd pushbullet-client
+cd pushbulleter
 go mod download
-go build -o pushbullet-client cmd/pushbullet-client/main.go
+go build -o pushbulleter cmd/pushbulleter/main.go
 ```
 
 ### Install
 
 ```bash
-sudo cp pushbullet-client /usr/local/bin/
+sudo cp pushbulleter /usr/local/bin/
 ```
 
 ## Configuration
 
 The application uses XDG-compliant configuration. The config file is located at:
-`$XDG_CONFIG_HOME/pushbullet-client/config.yaml` (usually `~/.config/pushbullet-client/config.yaml`)
+`$XDG_CONFIG_HOME/pushbulleter/config.yaml` (usually `~/.config/pushbulleter/config.yaml`)
 
 ### Initial setup
 
@@ -74,7 +74,7 @@ To enable E2E encryption:
 ### GUI mode (default)
 
 ```bash
-pushbullet-client
+pushbulleter
 ```
 
 This starts the application with a system tray icon.
@@ -82,7 +82,7 @@ This starts the application with a system tray icon.
 ### Daemon mode
 
 ```bash
-pushbullet-client -daemon
+pushbulleter -daemon
 ```
 
 This runs the application in the background without GUI.
@@ -90,7 +90,7 @@ This runs the application in the background without GUI.
 ### Custom config file
 
 ```bash
-pushbullet-client -config /path/to/config.yaml
+pushbulleter -config /path/to/config.yaml
 ```
 
 ### Autostart
@@ -121,7 +121,7 @@ Right-click the tray icon to access:
 ### Project structure
 
 ```
-├── cmd/pushbullet-client/    # Main application entry point
+├── cmd/pushbulleter/    # Main application entry point
 ├── internal/
 │   ├── app/                  # Application logic
 │   ├── config/               # Configuration management

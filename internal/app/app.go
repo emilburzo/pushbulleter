@@ -8,10 +8,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"pushbullet-client/internal/config"
-	"pushbullet-client/internal/gui"
-	"pushbullet-client/internal/notifications"
-	"pushbullet-client/internal/pushbullet"
+	"pushbulleter/internal/config"
+	"pushbulleter/internal/gui"
+	"pushbulleter/internal/notifications"
+	"pushbulleter/internal/pushbullet"
 )
 
 type App struct {
@@ -33,7 +33,7 @@ func New(cfg *config.Config) (*App, error) {
 	}
 
 	client := pushbullet.NewClient(cfg.APIKey, e2eKey)
-	
+
 	notifManager := notifications.NewManager(
 		cfg.Notifications.Enabled,
 		cfg.Notifications.ShowMirrors,
@@ -152,7 +152,7 @@ func (a *App) setupAutostart() error {
 		homeDir, _ := os.UserHomeDir()
 		configHome = filepath.Join(homeDir, ".config")
 	}
-	
+
 	autostartDir := filepath.Join(configHome, "autostart")
 	if err := os.MkdirAll(autostartDir, 0755); err != nil {
 		return err
@@ -171,6 +171,6 @@ Hidden=false
 X-GNOME-Autostart-enabled=true
 `, execPath)
 
-	desktopFile := filepath.Join(autostartDir, "pushbullet-client.desktop")
+	desktopFile := filepath.Join(autostartDir, "pushbulleter.desktop")
 	return os.WriteFile(desktopFile, []byte(desktopEntry), 0644)
 }
